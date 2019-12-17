@@ -1,14 +1,12 @@
 {
-    "$schema": "http://json.schemastore.org/proxies",
-    "proxies": {
-        "Get OG Image": {
-            "matchCondition": {
-                "route": "/v1/og-image/{id}",
-                "methods": [
-                    "GET"
-                ]
-            },
-            "backendUri": "%FunctionWebsiteName%/api/title-card/{id}?code=%FunctionApiKey%"
-        }
+  "$schema": "http://json.schemastore.org/proxies",
+  "proxies": {
+    "Get OG Image": {
+      "matchCondition": {
+        "route": "/v1/og-image/{id}",
+        "methods": ["GET"]
+      },
+      "backendUri": "https://%FunctionWebsiteName%.azurewebsites.net/api/title-card/{id}?code=%FunctionApiKey%"
     }
+  }
 }
