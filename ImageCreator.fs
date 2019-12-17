@@ -9,6 +9,11 @@ open SixLabors.Primitives
 open System.IO
 open System
 
+let getFontName =
+    match Environment.OSVersion.Platform with
+    | PlatformID.Unix -> "DejaVu Sans Mono"
+    | _ -> "Consolas"
+
 let generateBox (colour: Color) (width: float32) (height: float32) (offsetX: float32) (offsetY: float32)
     (image: Image<Rgba32>) =
 
@@ -52,7 +57,7 @@ let generateBox (colour: Color) (width: float32) (height: float32) (offsetX: flo
     image
 
 let addText (text: string) (fontSize: float32) (xEnd: float32) (y: float32) (image: Image<Rgba32>) =
-    let fam = SystemFonts.Find "DejaVu Sans Mono"
+    let fam = getFontName |> SystemFonts.Find
     let font = Font(fam, fontSize)
 
     let pb = PathBuilder()
