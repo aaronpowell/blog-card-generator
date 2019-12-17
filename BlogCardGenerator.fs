@@ -8,19 +8,9 @@ open Microsoft.AspNetCore.Http
 open ImageCreator
 open Microsoft.WindowsAzure.Storage.Blob
 open Microsoft.Extensions.Logging
+open RequestValidator
 
 module BlogCardGenerator =
-    [<Literal>]
-    let PostTitle = "title"
-
-    [<Literal>]
-    let Author = "author"
-
-    [<Literal>]
-    let Date = "date"
-
-    let gqs (req: HttpRequest) name = req.Query.[name].[0]
-
     let width = 640.f
     let height = 250.f
 
@@ -37,35 +27,39 @@ module BlogCardGenerator =
         ([<Blob("title-cards/{id}.png", FileAccess.ReadWrite)>] postImage: ICloudBlob) (id: string) (log: ILogger) =
         async {
             log.LogInformation <| sprintf "ID: %s" id
-            let gqs' = gqs req
 
-            let title = gqs' PostTitle
-            let author = gqs' Author
-            let date = gqs' Date
+            let! blogData = getBlogMetadata()
+            match tryFindPost id blogData.Posts with
+            | Some post ->
+                let title = post.Title
+                let author = "Aaron Powell"
+                let date = post.Date
 
-            log.LogInformation <| sprintf "title: %s, author: %s, date: %s" title author date
+                log.LogInformation <| sprintf "title: %s, author: %s, date: %A" title author date
 
-            let! exists = postImage.ExistsAsync() |> Async.AwaitTask
+                let! exists = postImage.ExistsAsync() |> Async.AwaitTask
 
-            if exists then
-                log.LogInformation "Image existed"
-                let! ms = downloadImage postImage
-                return FileStreamResult(ms, "image/png")
-            else
-                log.LogInformation "Image doesn't exist"
-                use image = makeImage width height title author date
+                if exists then
+                    log.LogInformation "Image existed"
+                    let! ms = downloadImage postImage
+                    return FileStreamResult(ms, "image/png") :> IActionResult
+                else
+                    log.LogInformation "Image doesn't exist"
+                    use image = makeImage width height title author date post.Tags
 
-                log.LogInformation "Created Image"
+                    log.LogInformation "Created Image"
 
-                let ms = imageToStream image
+                    let ms = imageToStream image
 
-                log.LogInformation "Copied to stream"
+                    log.LogInformation "Copied to stream"
 
-                do! postImage.UploadFromStreamAsync ms |> Async.AwaitTask
-                ms.Position <- int64 0
+                    do! postImage.UploadFromStreamAsync ms |> Async.AwaitTask
+                    ms.Position <- int64 0
 
-                log.LogInformation "Uploaded image"
+                    log.LogInformation "Uploaded image"
 
-                return FileStreamResult(ms, "image/png")
+                    return FileStreamResult(ms, "image/png") :> IActionResult
+            | None ->
+                return NotFoundResult() :> IActionResult
         }
         |> Async.StartAsTask

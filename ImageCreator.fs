@@ -7,6 +7,7 @@ open SixLabors.ImageSharp.Processing
 open SixLabors.Shapes
 open SixLabors.Primitives
 open System.IO
+open System
 
 let generateBox (colour: Color) (width: float32) (height: float32) (offsetX: float32) (offsetY: float32)
     (image: Image<Rgba32>) =
@@ -77,14 +78,19 @@ let addText (text: string) (fontSize: float32) (xEnd: float32) (y: float32) (ima
 
     image
 
-let makeImage width height title author date =
+let makeImage width height title author (date: DateTimeOffset) tags =
     let image = new Image<Rgba32>(int width, int height)
     image.Mutate(fun ctx -> ctx.Fill(Color.FromHex "02bdd5") |> ignore)
 
     generateBox (Rgba32.op_Implicit <| Rgba32.FromHex "333") width height 5.f 5.f image
     |> generateBox (Rgba32.op_Implicit Rgba32.White) width height 0.f 0.f
     |> addText title 30.f (width - 60.f) (height / 2.f)
-    |> addText (sprintf "%s | %s" author date) 20.f (width - 60.f) (height / 2.f + 40.f)
+    |> addText (sprintf "%s | %s" author (date.ToString "MMMM dd, yyyy")) 20.f (width - 60.f) (height / 2.f + 40.f)
+    |> addText
+        (tags
+         |> Array.map (fun t -> sprintf "#%s" t)
+         |> Array.toSeq
+         |> String.concat " ") 15.f (width - 60.f) (height / 2.f + 70.f)
     |> ignore
     image
 
