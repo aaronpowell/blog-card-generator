@@ -24,7 +24,8 @@ module BlogCardGenerator =
 
     [<FunctionName("BlogCardGenerator")>]
     let run ([<HttpTrigger(AuthorizationLevel.Function, "get", Route = "title-card/{id}")>] req: HttpRequest)
-        ([<Blob("title-cards/{id}.png", FileAccess.ReadWrite)>] postImage: ICloudBlob) (id: string) (log: ILogger) =
+        ([<Blob("title-cards/{id}.png", FileAccess.ReadWrite, Connection = "ImageStorage")>] postImage: ICloudBlob)
+        (id: string) (log: ILogger) =
         async {
             log.LogInformation <| sprintf "ID: %s" id
 
@@ -59,7 +60,6 @@ module BlogCardGenerator =
                     log.LogInformation "Uploaded image"
 
                     return FileStreamResult(ms, "image/png") :> IActionResult
-            | None ->
-                return NotFoundResult() :> IActionResult
+            | None -> return NotFoundResult() :> IActionResult
         }
         |> Async.StartAsTask
