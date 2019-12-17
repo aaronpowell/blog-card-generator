@@ -79,6 +79,8 @@ let addText (text: string) (fontSize: float32) (xEnd: float32) (y: float32) (ima
 
 let makeImage width height title author date =
     let image = new Image<Rgba32>(int width, int height)
+    image.Mutate(fun ctx -> ctx.Fill(Color.FromHex "02bdd5") |> ignore)
+
     generateBox (Rgba32.op_Implicit <| Rgba32.FromHex "333") width height 5.f 5.f image
     |> generateBox (Rgba32.op_Implicit Rgba32.White) width height 0.f 0.f
     |> addText title 30.f (width - 60.f) (height / 2.f)
