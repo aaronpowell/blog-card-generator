@@ -5,9 +5,9 @@ open Microsoft.AspNetCore.Mvc
 open Microsoft.Azure.WebJobs
 open Microsoft.Azure.WebJobs.Extensions.Http
 open Microsoft.AspNetCore.Http
-open ImageCreator
-open Microsoft.WindowsAzure.Storage.Blob
 open Microsoft.Extensions.Logging
+open Microsoft.WindowsAzure.Storage.Blob
+open ImageCreator
 open RequestValidator
 
 module BlogCardGenerator =
