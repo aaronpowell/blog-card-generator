@@ -20,11 +20,8 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: Build functions
-        run: dotnet build --configuration Release
-
       - name: Publish functions
-        run: dotnet publish --no-build --configuration Release --output ${{ env.OUTPUT_PATH }}
+        run: dotnet publish --configuration Release --output ${{ env.OUTPUT_PATH }}
 
       - name: Package functions
         uses: actions/upload-artifact@v1

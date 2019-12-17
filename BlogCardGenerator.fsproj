@@ -8,6 +8,7 @@
     </None>
     <None Include="local.settings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
     </None>
     <Compile Include="ImageCreator.fs" />
     <Compile Include="RequestValidator.fs" />
