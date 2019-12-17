@@ -1,0 +1,14 @@
+{
+    "$schema": "http://json.schemastore.org/proxies",
+    "proxies": {
+        "Get OG Image": {
+            "matchCondition": {
+                "route": "/v1/og-image/{id}",
+                "methods": [
+                    "GET"
+                ]
+            },
+            "backendUri": "%FunctionWebsiteName%/api/title-card/{id}?code=%FunctionApiKey%"
+        }
+    }
+}

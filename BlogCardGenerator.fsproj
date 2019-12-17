@@ -10,6 +10,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>Never</CopyToPublishDirectory>
     </None>
+    <None Include="proxies.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <Compile Include="ImageCreator.fs" />
     <Compile Include="RequestValidator.fs" />
     <Compile Include="BlogCardGenerator.fs" />
