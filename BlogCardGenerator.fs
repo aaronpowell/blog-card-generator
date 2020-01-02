@@ -32,12 +32,6 @@ module BlogCardGenerator =
             let! blogData = getBlogMetadata()
             match tryFindPost id blogData.Posts with
             | Some post ->
-                let title = post.Title
-                let author = "Aaron Powell"
-                let date = post.Date
-
-                log.LogInformation <| sprintf "title: %s, author: %s, date: %A" title author date
-
                 let! exists = postImage.ExistsAsync() |> Async.AwaitTask
 
                 if exists then
@@ -45,6 +39,12 @@ module BlogCardGenerator =
                     let! ms = downloadImage postImage
                     return FileStreamResult(ms, "image/png") :> IActionResult
                 else
+                    let title = post.Title
+                    let author = "Aaron Powell"
+                    let date = post.Date
+
+                    log.LogInformation <| sprintf "title: %s, author: %s, date: %A" title author date
+
                     log.LogInformation "Image doesn't exist"
                     use image = makeImage width height title author date post.Tags
 
