@@ -1,49 +1,60 @@
 namespace Company.Function
 
 open System.IO
-open Microsoft.AspNetCore.Mvc
-open Microsoft.Azure.WebJobs
-open Microsoft.Azure.WebJobs.Extensions.Http
+open Azure.Storage.Blobs
+open Microsoft.Azure.Functions.Worker
 open Microsoft.AspNetCore.Http
+open Microsoft.AspNetCore.Mvc
 open Microsoft.Extensions.Logging
-open Microsoft.WindowsAzure.Storage.Blob
 open ImageCreator
 open RequestValidator
 
 module BlogCardGenerator =
+    [<Function "Test">]
+    let runTest ([<HttpTrigger(AuthorizationLevel.Function, "get", Route = "test")>] req: HttpRequest) (log: ILogger) =
+        async {
+            log.LogInformation "Test"
+            return OkResult() :> IActionResult
+        }
+        |> Async.StartAsTask
+
     let width = 640.f
     let height = 250.f
 
-    let downloadImage (postImage: ICloudBlob) =
+    let downloadImage (postImage: BlobClient) =
         async {
-            let ms = new MemoryStream()
-            do! postImage.DownloadToStreamAsync ms |> Async.AwaitTask
-            ms.Position <- int64 0
-            return ms
+            let! content = postImage.DownloadContentAsync() |> Async.AwaitTask
+
+            return content.Value.Content
         }
 
-    [<FunctionName("BlogCardGenerator")>]
-    let run ([<HttpTrigger(AuthorizationLevel.Function, "get", Route = "title-card/{id}")>] req: HttpRequest)
-        ([<Blob("title-cards/{id}.png", FileAccess.ReadWrite, Connection = "ImageStorage")>] postImage: ICloudBlob)
-        (id: string) (log: ILogger) =
+    [<Function "BlogCardGenerator">]
+    let run
+        ([<HttpTrigger(AuthorizationLevel.Function, "get", Route = "title-card/{id}")>] req: HttpRequest)
+        ([<BlobInput("title-cards/{id}.png", Connection = "ImageStorage")>] postImage: BlobClient)
+        (id: string)
+        (log: ILogger)
+        =
         async {
             log.LogInformation <| sprintf "ID: %s" id
 
-            let! blogData = getBlogMetadata()
+            let! blogData = getBlogMetadata ()
+
             match tryFindPost id blogData.Posts with
             | Some post ->
                 let! exists = postImage.ExistsAsync() |> Async.AwaitTask
 
-                if exists then
+                if exists.Value then
                     log.LogInformation "Image existed"
-                    let! ms = downloadImage postImage
-                    return FileStreamResult(ms, "image/png") :> IActionResult
+                    let! file = downloadImage postImage
+                    return FileStreamResult(file.ToStream(), "image/png") :> IActionResult
                 else
                     let title = post.Title
                     let author = "Aaron Powell"
                     let date = post.Date
 
-                    log.LogInformation <| sprintf "title: %s, author: %s, date: %A" title author date
+                    log.LogInformation
+                    <| sprintf "title: %s, author: %s, date: %A" title author date
 
                     log.LogInformation "Image doesn't exist"
                     use image = makeImage width height title author date post.Tags
@@ -54,7 +65,7 @@ module BlogCardGenerator =
 
                     log.LogInformation "Copied to stream"
 
-                    do! postImage.UploadFromStreamAsync ms |> Async.AwaitTask
+                    let! _ = postImage.UploadAsync ms |> Async.AwaitTask
                     ms.Position <- int64 0
 
                     log.LogInformation "Uploaded image"

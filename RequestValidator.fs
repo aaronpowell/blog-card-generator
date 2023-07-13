@@ -3,7 +3,8 @@ module RequestValidator
 open FSharp.Data
 
 [<Literal>]
-let JsonExample = """
+let JsonExample =
+    """
 {
     "posts": [{
         "title": "Post Title",
@@ -16,6 +17,8 @@ let JsonExample = """
 
 type Blog = JsonProvider<JsonExample>
 
-let getBlogMetadata() = Blog.AsyncLoad "https://www.aaron-powell.com/index.json"
+let getBlogMetadata () =
+    Blog.AsyncLoad "https://www.aaron-powell.com/index.json"
 
-let tryFindPost (id: string) (blogs: Blog.Post array) = blogs |> Array.tryFind (fun blog -> blog.Id = id)
+let tryFindPost (id: string) (blogs: Blog.Post array) =
+    blogs |> Array.tryFind (fun blog -> blog.Id = id)

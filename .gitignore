@@ -264,3 +264,7 @@ __pycache__/
 *.pyc
 
 .ionide
+
+__azurite*
+__blobstorage__
+__queuestorage__
